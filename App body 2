@@ -1,0 +1,256 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+
+
+namespace Library_MS
+{
+    public partial class Books_UserControl : UserControl
+    {
+        private static Books_UserControl _instance;
+        
+        public static Books_UserControl Instance
+        {
+            get
+            {
+                if(_instance == null)
+                {
+                    _instance = new Books_UserControl();
+                }
+                return _instance;
+            }
+        }
+
+        public Books_UserControl()
+        {
+            InitializeComponent();
+        }
+
+
+
+
+        SqlConnection con = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C: \Users\hp\source\repos\Library MS\Library MS\Database1.mdf;Integrated Security=True");
+
+        private void Books_UserControl_Load(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void AddNewbutton_Click(object sender, EventArgs e)
+        {
+            SqlCommand cmd = new SqlCommand("BooksAdd_SP", con);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@AccNo",AccNotextBox.Text);
+            cmd.Parameters.AddWithValue("Isbn",ISBNtextBox.Text);
+            cmd.Parameters.AddWithValue("@Name",NametextBox.Text);
+            cmd.Parameters.AddWithValue("@Author",AuthortextBox.Text);
+            cmd.Parameters.AddWithValue("@Publisher",PublishertextBox.Text);
+            cmd.Parameters.AddWithValue("@Department",Department_combotextbox.Text);
+            
+
+            con.Open();
+            try
+            {
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("          <<<INVALID SQL OPERATION>>>:  \n" + ex);
+            }
+            con.Close();
+            refresh_DataGridView();
+
+        }
+
+        private void AccNotextBox_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void BookIDtextBox_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void NametextBox_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ISBNtextBox_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void PublishertextBox_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void AuthortextBox_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Searchbooksbutton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SqlCommand cmd = new SqlCommand("", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@AccNo", BookIDtextBox.Text);
+
+                SqlDataAdapter DA = new SqlDataAdapter(cmd);
+                DataSet DS = new DataSet();
+                DA.Fill(DS);
+
+                
+
+                con.Open();
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("       <<<INVALID SQL OPERATION>>>:  \n" + ex);
+                }
+                con.Close();
+
+
+                dataGridView1.DataSource = DS.Tables[0];
+                this.dataGridView1.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+                this.dataGridView1.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.dataGridView1.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.dataGridView1.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.dataGridView1.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.dataGridView1.Columns[5].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.dataGridView1.Columns[6].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.dataGridView1.Columns[7].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("" + ex);
+            }
+        }
+
+        private void Updatebutton_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Deletebutton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                SqlCommand cmd = new SqlCommand("DeleteBorrowers_SP", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@AccNo", AccNotextBox.Text);
+
+
+                con.Open();
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("       <<<INVALID SQL OPERATION>>>: \n" + ex);
+                }
+                con.Close();
+
+                refresh_DataGridView();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("" + ex);
+            }
+        }
+
+        private void Clearbutton_Click(object sender, EventArgs e)
+        {
+            BookIDtextBox.Text = "";
+            AccNotextBox.Text = "";
+            NametextBox.Text = "";
+            PublishertextBox.Text = "";
+            ISBNtextBox.Text = "";
+            AuthortextBox.Text = "";
+            Department_combotextbox.Text = "";
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        public void refresh_DataGridView()
+        {
+            try
+            {
+                SqlCommand cmd = new SqlCommand("ShowAllBooksData_SP", con);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                SqlDataAdapter DA = new SqlDataAdapter(cmd);
+                DataSet DS = new DataSet();
+                DA.Fill(DS);
+
+                con.Open();
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("       <<<INVALID SQL OPERATION>>>:  \n" + ex);
+                }
+                con.Close();
+
+
+                dataGridView1.DataSource = DS.Tables[0];
+                this.dataGridView1.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+                this.dataGridView1.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.dataGridView1.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.dataGridView1.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.dataGridView1.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.dataGridView1.Columns[5].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.dataGridView1.Columns[6].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.dataGridView1.Columns[7].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("" + ex);
+            }
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
