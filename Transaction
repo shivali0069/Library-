@@ -1,0 +1,237 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+
+namespace Library_MS
+{
+    public partial class Transactions_UserControl : UserControl
+    {
+        private static Transactions_UserControl _instance;
+
+        public static Transactions_UserControl Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new Transactions_UserControl();
+                }
+                return _instance;
+            }
+        }
+        public Transactions_UserControl()
+        {
+            InitializeComponent();
+        }
+
+        private void Transactions_UserControl_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        public string book1, book2, borrower;
+
+        SqlConnection con = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C: \Users\hp\source\repos\Library MS\Library MS\Database1.mdf;Integrated Security=True");
+        public SqlCommand cmd;
+        public SqlDataReader dr;
+        private void button1_Click(object sender, EventArgs e)
+        {
+            //to get book 1
+            con.Open();
+            string syntax = "SELECT book1 from borrowers where BrId='"+BorrowerstextBox.Text+"'";
+            cmd = new SqlCommand(syntax, con);
+            dr = cmd.ExecuteReader();
+            dr.Read();
+            borrowedby1label.Text = book1 = dr[0].ToString();
+            con.Close();
+            //to get book 2
+            con.Open();
+            syntax = "SELECT book2 from borrowers where BrId='" + BorrowerstextBox.Text + "'";
+            cmd = new SqlCommand(syntax, con);
+            dr = cmd.ExecuteReader();
+            dr.Read();
+            borrowedby2label.Text = book2 = dr[0].ToString();
+            con.Close();
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            //to get borrowed by
+            con.Open();
+            string syntax = "SELECT borrower from books where AccNo='" + AccNotextBox.Text + "'";
+            cmd = new SqlCommand(syntax, con);
+            dr = cmd.ExecuteReader();
+            dr.Read();
+            borrowerlabel.Text = borrower = dr[0].ToString();
+            con.Close();
+        }
+
+       
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            //see if the book is borrowed by someone
+            Searchbooksbutton.PerformClick();
+            if (borrower != "")
+            {
+                //someone has borrowed the book
+                MessageBox.Show("Book is already borrowed by some other borrower with borrower id : \n" + borrower);
+                return;
+            }
+
+            //see if the borrower has already taken two books
+            Searchborrowersbutton.PerformClick();
+            if ((book1 != "") && (book2 != ""))
+            {
+                //borrower has already borrowed maximum number of books
+                MessageBox.Show("borrower has already borrowed maximum number of books");
+                return;
+            }
+
+            //continue issue process
+
+            //first set the value of book1 and book2 as the accno of the book being issued
+            try
+            {
+                if (book1 == "")
+                {
+                    //accno must be updated in the book1 slot
+                    cmd = new SqlCommand("Transact_Update_book1_SP", con);
+                }
+                else
+                {
+                    //accno must be updated in the book2 slot
+                    cmd = new SqlCommand("Transact_Update_book2_SP", con);
+                }
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@AccNo", AccNotextBox.Text);
+                cmd.Parameters.AddWithValue("BrId",BorrowerstextBox.Text);
+
+                con.Open();
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("          <<<INVALID SQL OPERATION>>>: \n" + ex);
+                }
+                con.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("" + ex);
+            }
+
+            //now we can also update the borrower's id in the books table
+            cmd = new SqlCommand("Transact_Update_borrower_SP", con);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+             cmd.Parameters.AddWithValue("@AccNo", AccNotextBox.Text);
+             cmd.Parameters.AddWithValue("BrId",BorrowerstextBox.Text);
+
+                con.Open();
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("          <<<INVALID SQL OPERATION>>>: \n" + ex);
+                }
+                con.Close();
+
+            Searchbooksbutton.PerformClick();
+            Searchborrowersbutton.PerformClick();
+            MessageBox.Show("Successfully Issued");
+
+        }
+        private void Returnbutton_Click(object sender, EventArgs e)
+        {
+            //see if the book is borrowed by someone
+            Searchbooksbutton.PerformClick();
+            Searchborrowersbutton.PerformClick();
+            if ((AccNotextBox.Text != book1) && (AccNotextBox.Text != book2))
+            {
+             
+                MessageBox.Show("The borrower has not borrowed the book");
+                return;
+            }
+
+           
+
+            //continue return process
+
+            //first set value of book1 and book2 as the accno of the book being issued
+            try
+            {
+                if (book1 == "")
+                {
+                    //accno must be updated in the book1 slot
+                    cmd = new SqlCommand("Transact_Update_book1_SP", con);
+                }
+                else
+                {
+                    //accno must be updated in the book2 slot
+                    cmd = new SqlCommand("Transact_Update_book2_SP", con);
+                }
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@AccNo", (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("BrId", BorrowerstextBox.Text);
+
+                con.Open();
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("          <<<INVALID SQL OPERATION>>>: \n" + ex);
+                }
+                con.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("" + ex);
+            }
+
+            //now we can also update the borrower's id in the books table
+            cmd = new SqlCommand("Transact_Update_borrower_SP", con);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@AccNo", AccNotextBox.Text);
+            cmd.Parameters.AddWithValue("BrId", (object)DBNull.Value);
+
+            con.Open();
+            try
+            {
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("            <<<INVALID SQL OPERATION>>>: \n" + ex);
+            }
+            con.Close();
+
+            Searchbooksbutton.PerformClick();
+            Searchborrowersbutton.PerformClick();
+            MessageBox.Show("Successfully Returned");
+        }
+
+    }
+}
