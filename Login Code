@@ -1,0 +1,110 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+
+namespace Library_MS
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        SqlConnection con = new SqlConnection(“Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=\”|DataDirectory|\\Database1.mdf\”;Integrated Security=True”);
+        SqlCommand cmd;
+        SqlDataReader dr;
+
+
+        private string getUserName()
+        {
+            //fetch data from the database
+            con.Open();
+            String syntax = “SELECT value FROM systemTable where Property=’Username’”;
+            cmd = new SqlCommand(syntax, con);
+            dr = cmd.ExecuteReader();
+            dr.Read();
+            string temp = dr[0].ToString();
+            con.Close();
+            return temp;
+
+
+        }
+
+        private string getPassword()
+        {
+            //fetch data from the database
+            con.Open();
+            String syntax = “SELECT value FROM systemTable where Property=’Password’”;
+            cmd = new SqlCommand(syntax, con);
+            dr = cmd.ExecuteReader();
+            dr.Read();
+            string temp = dr[0].ToString();
+            con.Close();
+            return temp;
+
+
+        }
+
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            
+            string Uname=getUserName(), Upass =getPassword(), name, pass;
+            name = textBox1.Text;
+            pass = textBox2.Text;
+
+            if(name.Equals(Uname) && pass.Equals(Upass))
+            {
+                //login
+                Form2 obj = new Form2();
+                this.Hide();
+                obj.Show();
+
+                
+            }
+            else
+            {
+                //do not login
+                MessageBox.Show(“Invalid credentials”);
+            }
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
